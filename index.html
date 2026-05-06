@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>7-3-1-Fixer JS</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    max-width: 600px;
+    margin: 40px auto;
+}
+
+.lang-menu {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.lang-btn {
+    border: 1px solid #ccc;
+    background: #f5f5f5;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.lang-btn.active {
+    background: #333;
+    color: white;
+}
+
+h2 {
+    margin-bottom: 20px;
+}
+
+.row {
+    margin-bottom: 15px;
+}
+
+input {
+    padding: 8px;
+    width: 250px;
+}
+
+button {
+    padding: 8px 12px;
+    margin-left: 5px;
+    cursor: pointer;
+    background: #333;
+}
+
+#resultat {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    max-height: 300px;
+    overflow-y: auto;
+}
+</style>
+
+</head>
+<body>
+
+<div class="lang-menu">
+    <button class="lang-btn" onclick="setLang('en')" id="btn-en">EN</button>
+    <button class="lang-btn" onclick="setLang('sv')" id="btn-sv">SV</button>
+    <button class="lang-btn" onclick="setLang('fi')" id="btn-fi">FI</button>
+</div>
+
+<h2 id="title">7-3-1-Fixer JS</h2>
+
+<div class="row">
+    <label id="label-serien">Serienummer:</label><br>
+    <label id="label-serien2">(okänd kontrollsiffra)</label><br>
+    <input id="serien" placeholder="123456789">
+    <button onclick="valideraSerien()" id="btn-ok1">OK</button>
+</div>
+
+
+
+<div class="row">
+    <label id="label-full">Serienummer med kontrollsiffra:</label><br>
+    <label id="label-full2">('?' för siffror som saknas)</label><br>
+    <input id="fullSerien" placeholder="123456789-7">
+    <button onclick="hittaKandidater()" id="btn-ok2">OK</button>
+</div>
+
+<div id="resultat"></div>
+
+<script>
+/* Language content */
+const språk = {
+    sv: {
+        title: "7-3-1-Fixer JS",
+        serien: "Serienummer:",
+        serien2: "(okänd kontrollsiffra)",
+        full: "Serienummer med kontrollsiffra:",
+        full2: "('?' för siffror som saknas)",
+        ok: "OK",
+        errorEmpty: "Ange ett serienummer.",
+        errorDigits: "Endast siffror tillåtna.",
+        result: "Kontrollsiffra:",
+        tooShort: "Serien måste vara minst 2 tecken.",
+        invalidFormat: "Ogiltigt format.",
+        missingCheck: "Kontrollsiffra saknas.",
+        missingDigits: "1–3 siffror måste saknas (markerade med '?').",
+        noCandidates: "Inga kandidater hittades.",
+        candidates: "Kandidater:"
+    },
+    en: {
+        title: "7-3-1-Fixer JS",
+        serien: "Serial number:",
+        serien2: "(unknown check digit)",
+        full: "Serial with check digit:",
+        full2: "(‘?’ instead of missing digits)",
+        ok: "OK",
+        errorEmpty: "Enter a serial number.",
+        errorDigits: "Digits only.",
+        result: "Check digit:",
+        tooShort: "Too short.",
+        invalidFormat: "Invalid format.",
+        missingCheck: "Missing check digit.",
+        missingDigits: "1–3 digits must be missing ('?').",
+        noCandidates: "No candidates found.",
+        candidates: "Candidates:"
+    },
+    fi: {
+        title: "7-3-1-Fixer JS",
+        serien: "Sarjanumero:",
+        serien2: "(tuntematon tarkistusnumero)",
+        full: "Sarjanumero tarkistusnumerolla:",
+        full2: "(’?’ puuttuville numeroille)",
+        ok: "OK",
+        errorEmpty: "Anna sarjanumero.",
+        errorDigits: "Vain numerot sallittu.",
+        result: "Tarkistusnumero:",
+        tooShort: "Liian lyhyt.",
+        invalidFormat: "Virheellinen muoto.",
+        missingCheck: "Tarkistusnumero puuttuu.",
+        missingDigits: "1–3 numeroa puuttuu ('?').",
+        noCandidates: "Ei tuloksia.",
+        candidates: "Vaihtoehdot:"
+    }
+};
+
+let currentLang = localStorage.getItem("lang") || "sv";
+
+/* Change language */
+function setLang(lang) {
+    currentLang = lang;
+    localStorage.setItem("lang", lang);
+    applyLang();
+}
+
+/* Choose language, apply */
+function applyLang() {
+    let t = språk[currentLang];
+
+    document.getElementById("title").innerText = t.title;
+    document.getElementById("label-serien").innerText = t.serien;
+    document.getElementById("label-serien2").innerText = t.serien2;
+    document.getElementById("label-full").innerText = t.full;
+    document.getElementById("label-full2").innerText = t.full2;
+    document.getElementById("btn-ok1").innerText = t.ok;
+    document.getElementById("btn-ok2").innerText = t.ok;
+
+    document.querySelectorAll(".lang-btn").forEach(btn => btn.classList.remove("active"));
+    document.getElementById("btn-" + currentLang).classList.add("active");
+}
+
+/* Functions */
+function beraknaKontrollsiffra(nummerStr) {
+    let siffror = nummerStr.replace(/\s|-/g, "");
+    let vikter = [7, 3, 1];
+    let summa = 0;
+
+    siffror.split("").reverse().forEach((siffra, i) => {
+        summa += parseInt(siffra) * vikter[i % 3];
+    });
+
+    return (10 - (summa % 10)) % 10;
+}
+
+function valideraSerien() {
+    let t = språk[currentLang];
+    let serien = document.getElementById("serien").value.trim();
+
+    if (!serien) return alert(t.errorEmpty);
+    if (!/^\d+$/.test(serien)) return alert(t.errorDigits);
+
+    let kontroll = beraknaKontrollsiffra(serien);
+    document.getElementById("resultat").innerHTML =
+        "<b>" + t.result + "</b> " + kontroll;
+}
+
+function hittaKandidater() {
+    let t = språk[currentLang];
+    let full = document.getElementById("fullSerien").value.trim().replace(/\s/g, "");
+
+    if (full.length < 2) return alert(t.tooShort);
+
+    let kontrollsiffra, serien;
+
+    if (full.includes("-")) {
+        let parts = full.split("-");
+        if (parts.length !== 2 || isNaN(parts[1])) return alert(t.invalidFormat);
+        kontrollsiffra = parseInt(parts[1]);
+        serien = parts[0];
+    } else {
+        if (isNaN(full.slice(-1))) return alert(t.missingCheck);
+        kontrollsiffra = parseInt(full.slice(-1));
+        serien = full.slice(0, -1);
+    }
+
+    let saknade = [...serien].map((c,i)=>c==="?"?i:null).filter(i=>i!==null);
+    if (saknade.length === 0 || saknade.length > 3) return alert(t.missingDigits);
+
+    let kandidater = [];
+    let siffror = "0123456789";
+
+    function gen(k=[], d=0){
+        if(d===saknade.length){
+            let test = serien.split("");
+            saknade.forEach((pos,i)=>test[pos]=k[i]);
+            let str = test.join("");
+            if(beraknaKontrollsiffra(str)===kontrollsiffra)
+                kandidater.push(str+"-"+kontrollsiffra);
+            return;
+        }
+        for(let s of siffror) gen([...k,s],d+1);
+    }
+
+    gen();
+
+    document.getElementById("resultat").innerHTML =
+        kandidater.length
+        ? "<b>"+t.candidates+"</b><br>"+kandidater.join("<br>")
+        : "<p>"+t.noCandidates+"</p>";
+}
+
+
+applyLang();
+</script>
+
+</body>
+</html>
