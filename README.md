@@ -2,7 +2,7 @@
 7‑3‑1‑Fixer JS
 
 
-A lightweight JavaScript/HTML port of the original 731‑Check tool, which was initially developed as a component for an embedded C project.
+A lightweight JavaScript/HTML port of the original 731‑CHECK tool, which was initially developed as a component for an embedded C project.
 This version is designed to run on any platform — including smartphones and restricted environments.
 The tool calculates 7‑3‑1 check digits, validates serial numbers, and can repair incomplete sequences by reconstructing missing digits using the 7‑3‑1 algorithm.
 
@@ -32,5 +32,5 @@ License
 MIT
 
 
-Author
+Author,
 Matias Back
