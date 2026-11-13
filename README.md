@@ -7,11 +7,14 @@ The tool calculates 7‑3‑1 check digits, validates serial numbers, and can re
 
 
 ## Why?
-The 7-3-1 checksum appears in many places, including animal ID numbers.
-The information available before the work starts is not always complete; digits can be missing from pre-received numbers, sequences cut off.
-This is a tool I use myself to double-check such numbers and predict how a workflow will take shape before all the data is in place.
-Doing that by hand is slow and error-prone, and the original 731-Check was a C component tied to an RFID embedded project.
-So I ported the algorithm itself into a single page that runs in any browser.
+The 7-3-1 checksum is used in various applications, including animal identification numbers.
+Before a workflow begins, however,the preliminary information available for planning may be incomplete.
+Some digits may not yet be known, or only part of a sequence may have been provided.
+
+I regularly use this method to double-check preliminary number information, and make sure the workflow is as predictable and reliable as possible.
+
+Being able to calculate check digits, reconstruct missing digits, and verify preliminary information against the expected results helps ensure that everything is consistent before the actual work begins.
+I originally developed 731-Check as a component for an embedded RFID project in C, but decided to bring the algorithm to a lightweight, standalone web application that runs directly on any device.
 
 
 ## Features
